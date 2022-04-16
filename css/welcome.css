@@ -1,0 +1,15 @@
+
+.cards{
+    display: flex;
+    padding: 10px;
+    margin: 10px; 
+    flex-wrap: wrap;  
+}
+
+.card{
+    margin: 2rem;
+}
+
+.card:hover{
+    transform: scale(1.1);
+}
