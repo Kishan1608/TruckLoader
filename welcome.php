@@ -14,7 +14,7 @@ if(isset($_POST["submit"])){
     $city = $_POST['city'];
     $price = $_POST['price'];
 
-    $sql = "SELECT * FROM driverpost WHERE city = '$city' AND base_price <= '$price' ";
+    $sql = "SELECT * FROM driverpost WHERE city = '$city' AND base_price <= '$price' AND booking_status != 1";
     if(mysqli_query($conn, $sql)){
       header("Location: welcome.php");
     }else{
@@ -103,9 +103,9 @@ if(isset($_POST["submit"])){
   <?php if(array_key_exists('filter', $_POST)){
     $city = $_POST['city'];
     $price = $_POST['price'];
-    $query = mysqli_query($conn, "SELECT * FROM driverpost WHERE city = '$city' AND base_price <= '$price'");  
+    $query = mysqli_query($conn, "SELECT * FROM driverpost WHERE city = '$city' AND base_price <= '$price' AND booking_status != 1 ");  
   }else{
-    $query = mysqli_query($conn, "SELECT * FROM driverpost");
+    $query = mysqli_query($conn, "SELECT * FROM driverpost WHERE booking_status != 1 ");
   }
   
   ?>

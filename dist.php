@@ -67,9 +67,14 @@ else{
 $distance = getDistance($addressFrom, $addressTo, "K");
 
 $sql = mysqli_query($conn,"SELECT * FROM users WHERE username = '".$_SESSION['username']."'");
-    $user = mysqli_fetch_array($sql);
+$user = mysqli_fetch_array($sql);
 
-    if(!empty($_POST['total'])){
+$sqli = mysqli_query($conn, "SELECT * FROM booking_details");
+$details = mysqli_fetch_array($sqli);
+
+if(array_key_exists('button1', $_POST)){
+    if(!isset($details['driver'])){
+
         $user = $_POST['client'];
         $driver = $_POST['driver'];
         $distance = $_POST['distance'];
@@ -77,27 +82,25 @@ $sql = mysqli_query($conn,"SELECT * FROM users WHERE username = '".$_SESSION['us
         $destination = $_POST['destination'];
         $travel_cost = $_POST['travelcost'];
         $total = $_POST['total'];
+        $payment = 0;
 
-        $query = "SELECT * FROM booking_details";
-        $sql1 = mysqli_query($conn, $query);
-        $details = mysqli_fetch_array($sql1);
+        $sql1 = "INSERT INTO booking_details (distance, source, destination, travel_cost, total, client, driver, payment_status) values ('$distance', '$source', '$destination', '$travel_cost', '$total', '$user', '$driver', '$payment')";;
+        $sql2 = "UPDATE drivers set booking_status = 1 WHERE username = '$driver' ";
+        $sql3 = "UPDATE driverpost set booking_status = 1 WHERE username = '$driver' ";
+        
+        if(mysqli_query($conn, $sql1)){
+            mysqli_query($conn, $sql2);
+            mysqli_query($conn, $sql3);
 
-        if($details['driver'] != $driver){
-
-            $sql = "INSERT INTO booking_details (distance, source, destination, travel_cost, total, client, driver) values ('$distance', '$source', '$destination', '$travel_cost', '$total', '$user', '$driver')";;
-            $sql2 = "UPDATE drivers set booking_status = TRUE WHERE username = '$driver' ";
-            
-            if(mysqli_query($conn, $sql)){
-                mysqli_query($conn, $sql2);
-                header("location: booking.php");
-                exit();
-            }else{
-                echo "Something went Wrong";
-            }
+            header("Location: /TruckLoader/payment.php?driver='$driver' ");
+            exit();
         }else{
-            echo "Driver Already Booked";
+            echo "Something went Wrong";
         }
+    }else{
+        $_SESSION['Error'] = "Driver Already Booked";
     }
+}
 
 ?>
 
@@ -399,7 +402,20 @@ $sql = mysqli_query($conn,"SELECT * FROM users WHERE username = '".$_SESSION['us
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
+        <?php 
+            if( isset($_SESSION['Error']) )
+            { ?>
+                <h5 style="color: red;">
+                    <?php 
+                        
+                            echo $_SESSION['Error'];
+                        
+                            unset($_SESSION['Error']);
+                    ?>
+                </h5>
+        <?php }else{ ?>
         <h5 class="modal-title" id="exampleModalLongTitle">Confirm Booking</h5>
+        <?php } ?>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -447,12 +463,18 @@ $sql = mysqli_query($conn,"SELECT * FROM users WHERE username = '".$_SESSION['us
         </div>
         <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-primary">Confirm</button>
+            <button type="submit" class="btn btn-primary" name="button1">Confirm</button>
+            
         </div>
-        </form>
+      </form>
     </div>
   </div>
 </div>
+
+<div class="conatiner">
+    
+</div>
+
     <script
       src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBHRM-ggFhlphsnVmPhMKHyqhsw1xCDrK4&callback=initMap&v=weekly"
       

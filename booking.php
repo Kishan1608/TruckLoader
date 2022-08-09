@@ -1,12 +1,100 @@
 <?php 
 require_once "config.php";
+require('fpdf184/fpdf.php');
+//$db = new PDO('mysql:localhost; dbname=truckloader', 'root','');
 session_start();
 
-$sql = mysqli_query($conn,"SELECT * FROM booking_details WHERE client = '".$_SESSION['username']."'");
+$sql = mysqli_query($conn,"SELECT * FROM booking_details WHERE client = '".$_SESSION['username']."' ");
+$arr1 = mysqli_fetch_array($sql);
 
 $sql1 = mysqli_query($conn,"SELECT * FROM users WHERE username = '".$_SESSION['username']."'");
 $arr = mysqli_fetch_array($sql1);
 
+if(array_key_exists('button1', $_POST)){
+    class PDF extends FPDF {
+  
+        // Page header
+        function Header() {
+              
+            // Add logo to page
+            $this->Image('upload\truck-logo-cargo-logo-delivery-cargo-trucks-log-vector-26486067.jpg',10,8,33);
+              
+            // Set font family to Arial bold 
+            $this->SetFont('Arial','B',20);
+              
+              
+            // Header
+            $this->Cell(210,5,'TruckLoader',0,0,'C');
+              
+            // Line break
+            $this->Ln(8);
+
+            $this->SetFont('Times','',12);
+            $this->Cell(210,2,'VESIT Logistics',0,0,'C');
+            $this->Ln(20);
+        }
+      
+        // Page footer
+        function Footer() {
+              
+            // Position at 1.5 cm from bottom
+            $this->SetY(-15);
+              
+            // Arial italic 8
+            $this->SetFont('Arial','I',8);
+              
+            // Page number
+            $this->Cell(0,10,'Page ' . 
+                $this->PageNo() . '/{nb}',0,0,'C');
+        }
+
+        function headerTable(){
+            $this->SetFont('Times','B',12);
+            
+            $this->Cell(45,10,'Source',1,0,'C');
+            $this->Cell(45,10,'Destination',1,0,'C');
+            $this->Cell(45,10,'Distance',1,0,'C');
+            $this->Cell(45,10,'Total',1,0,'C');
+            $this->Ln();
+        }   
+
+        // function viewTable($db){
+        //     $this->SetFont('Times','',12);
+        //     $stmt = $db->query("SELECT * FROM booking_details WHERE username = '".$_SESSION['username']."' ");
+        //     while($data=$stmt->fetch(PDO::FETCH_OBJ)){
+        //         $this->Cell(38,10,$data->source,1,0,'L');
+        //         $this->Cell(38,10,$data->destination,1,0,'L');
+        //         $this->Cell(38,10,$data->distance,1,0,'C');
+        //         $this->Cell(38,10,$data->total,1,0,'C');
+        //         $this->Cell(38,10,$data->payment_status,1,0,'C');
+        //         $this->Ln();
+        //     }
+            
+        // }
+    }
+      
+    //Instantiation of FPDF class
+    $pdf = new PDF();
+    // Define alias for number of pages
+    $pdf->AliasNbPages();
+    $pdf->AddPage();
+    $pdf->headerTable();
+    $pdf->Cell(45,100,$arr1['source'],1,0,'C');
+    $pdf->Cell(45,100,$arr1['destination'],1,0,'C');
+    $pdf->Cell(45,100,$arr1['distance'].'km',1,0,'C');
+    $pdf->Cell(45,100,'',1,0,'C');
+
+    $pdf->Ln();
+    $pdf->Cell(135,30,'GST TAX',1,0,'C');
+    $pdf->Cell(45,10,'CGST 9%',1,0,'C');
+    $pdf->Ln();
+    $pdf->Cell(135,10,'',0,0,'C');
+    $pdf->Cell(45,10,'SGST 9%',1,0,'C');
+    $pdf->Ln();
+    $pdf->Cell(135,10,'',0,0,'C');
+    $pdf->Cell(45,10,'Rs'.$arr1['total'],1,0,'C');
+    $pdf->Output();
+}
 ?>
 
 <!doctype html>
@@ -57,6 +145,9 @@ $arr = mysqli_fetch_array($sql1);
 
                 $query2 = mysqli_query($conn, "SELECT * FROM driverpost where username='$username' ");
                 $arr2 = mysqli_fetch_array($query2);
+
+                $sql = mysqli_query($conn,"SELECT * FROM booking_details WHERE client = '".$_SESSION['username']."' ");
+                $arr3 = mysqli_fetch_array($sql);
             ?>
             <br><br><br><br>
             <div class="media">
@@ -67,7 +158,10 @@ $arr = mysqli_fetch_array($sql1);
                     <h5 class="mt-0"><?php echo "Contact:- ".$arr1['contact']?></h5>
                     <h5 class="mt-0"><?php echo "Truck Number:- ".$arr1['vehicle_number']?></h5>
                     <h5 class="mt-0"><?php echo "Price:- "."₹".$a['total']?></h5>
-                    <a href="cancel.php?driver=<?php echo $a['driver'] ?>" class="btn btn-danger"> Cancel Truck</a>
+                    <a href="cancel.php?driver=<?php echo $a['driver'] ?>" class="btn btn-danger"> Cancel Truck</a><br><br>
+                    <form action=""  method="POST">
+                        <button class="btn btn-success" name="button1">Get Receipt</button>
+                    </form>
                 </div>
             </div>
             <br>
